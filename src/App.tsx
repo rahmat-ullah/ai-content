@@ -5,10 +5,13 @@ import './App.css';
 // Layout Components
 const Header = lazy(() => import('./components/layout/Header'));
 const Footer = lazy(() => import('./components/layout/Footer'));
+const BlogPageLayout = lazy(() => import('./components/layout/BlogPageLayout'));
 
 // Section Components
 const HeroSection = lazy(() => import('./components/sections/HeroSection'));
 const FeatureSection = lazy(() => import('./components/sections/FeatureSection'));
+const BlogListSection = lazy(() => import('./components/sections/BlogListSection'));
+const BlogPostDetailSection = lazy(() => import('./components/sections/BlogPostDetailSection'));
 const TestimonialSection = lazy(() => import('./components/sections/TestimonialSection'));
 const PricingSection = lazy(() => import('./components/sections/PricingSection'));
 const LogoSection = lazy(() => import('./components/sections/LogoSection'));
@@ -32,7 +35,66 @@ const LoadingFallback = () => (
   </div>
 );
 
+import { defaultContent } from './data/defaultContent'; 
+import type { ContentType, BlogEntry } from './components/cms/CMSPanel';
+import { useState, useEffect } from 'react';
+
 function App() {
+  const [blogPosts, setBlogPosts] = useState<BlogEntry[]>([]);
+  const [currentPostSlug, setCurrentPostSlug] = useState<string | null>(null);
+  const [selectedPost, setSelectedPost] = useState<BlogEntry | null>(null);
+  const [isBlogPageActive, setIsBlogPageActive] = useState<boolean>(false);
+
+  useEffect(() => {
+    const savedContentString = localStorage.getItem('cmsContent');
+    if (savedContentString) {
+      try {
+        const savedContent = JSON.parse(savedContentString) as ContentType;
+        if (savedContent.blog && savedContent.blog.posts) {
+          setBlogPosts(savedContent.blog.posts);
+        } else {
+          // Fallback to default if blog section is missing in localStorage
+          setBlogPosts(defaultContent.blog.posts);
+        }
+      } catch (error) {
+        console.error('Failed to parse saved content for blog posts:', error);
+        setBlogPosts(defaultContent.blog.posts); // Fallback to default on error
+      }
+    } else {
+      // Fallback to default if no content in localStorage
+      setBlogPosts(defaultContent.blog.posts);
+    }
+  }, []);
+
+  useEffect(() => {
+    const getPathFromHash = () => window.location.hash.substring(1); // Remove #
+    
+    const handleHashChange = () => {
+      const path = getPathFromHash();
+      
+      if (path.startsWith('/blog')) {
+        setIsBlogPageActive(true);
+        const slug = path.startsWith('/blog/') ? path.substring('/blog/'.length) : null;
+        setCurrentPostSlug(slug);
+
+        if (slug) {
+          const post = blogPosts.find(p => p.slug === slug && p.status === 'published');
+          setSelectedPost(post || null);
+        } else {
+          setSelectedPost(null); // No specific post, show list
+        }
+      } else {
+        setIsBlogPageActive(false);
+        setSelectedPost(null); // Not on blog page, so no selected post
+        setCurrentPostSlug(null);
+      }
+    };
+
+    handleHashChange(); // Initial check
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, [blogPosts]);
+
   return (
     <>
       <Helmet>
@@ -77,13 +139,23 @@ function App() {
       <Suspense fallback={<LoadingFallback />}>
         <Header />
         <main>
-          <HeroSection />
-          <FeatureSection />
-          <TestimonialSection />
-          <PricingSection />
-          <LogoSection />
-          <FAQSection />
-          <NewsletterSection />
+          {isBlogPageActive ? (
+            <BlogPageLayout
+              posts={blogPosts}
+              selectedPost={selectedPost}
+              onCloseDetailView={() => window.location.hash = '#/blog'}
+            />
+          ) : (
+            <>
+              <HeroSection />
+              <FeatureSection />
+              <TestimonialSection />
+              <PricingSection />
+              <LogoSection />
+              <FAQSection />
+              <NewsletterSection />
+            </>
+          )}
         </main>
         <Footer />
         <FloatingActionButton />

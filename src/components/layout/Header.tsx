@@ -46,6 +46,7 @@ const Header = () => {
             <NavLink href="#pricing">Pricing</NavLink>
             <NavLink href="#testimonials">Testimonials</NavLink>
             <NavLink href="#faq">FAQ</NavLink>
+            <NavLink href="#/blog">Blog</NavLink>
             <motion.button
               className="bg-primary hover:bg-primary-500 text-white px-6 py-2 rounded-full font-medium transition-all"
               whileHover={{ scale: 1.05 }}
@@ -92,6 +93,7 @@ const Header = () => {
               <MobileNavLink href="#pricing" onClick={() => setMobileMenuOpen(false)}>Pricing</MobileNavLink>
               <MobileNavLink href="#testimonials" onClick={() => setMobileMenuOpen(false)}>Testimonials</MobileNavLink>
               <MobileNavLink href="#faq" onClick={() => setMobileMenuOpen(false)}>FAQ</MobileNavLink>
+              <MobileNavLink href="#/blog" onClick={() => setMobileMenuOpen(false)}>Blog</MobileNavLink>
               <motion.button
                 className="bg-primary hover:bg-primary-500 text-white px-6 py-2 rounded-full font-medium transition-all w-full"
                 whileHover={{ scale: 1.05 }}
