@@ -12,6 +12,7 @@ const CMSSidebar = ({ activeSection, setActiveSection }: CMSSidebarProps) => {
     { id: 'logos', label: 'Integration Logos' },
     { id: 'faq', label: 'FAQ' },
     { id: 'newsletter', label: 'Newsletter' },
+    { id: 'blog', label: 'Blog Posts' },
     { id: 'footer', label: 'Footer' },
   ];
 

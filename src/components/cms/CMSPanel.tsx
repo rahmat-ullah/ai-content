@@ -12,12 +12,33 @@ import CMSLogoEditor from './editors/CMSLogoEditor';
 import CMSFAQEditor from './editors/CMSFAQEditor';
 import CMSNewsletterEditor from './editors/CMSNewsletterEditor';
 import CMSFooterEditor from './editors/CMSFooterEditor';
+import CMSBlogEditor from './editors/CMSBlogEditor';
 
 // Default content data
 import { defaultContent } from '../../data/defaultContent';
 
 // Define content type
-interface ContentType {
+// Ensure BlogEntry and BlogContent are exported for use in other components
+export interface BlogEntry {
+  id: string;
+  title: string;
+  slug: string;
+  content: string; // HTML content from rich text editor
+  author: string;
+  publicationDate: string; // ISO date string
+  tags: string[];
+  status: 'draft' | 'published';
+  excerpt: string;
+  // AddcoverImage?: string; // Optional: URL to a cover image
+}
+
+export interface BlogContent {
+  posts: BlogEntry[];
+  // We can add other blog-wide settings here later if needed
+  // e.g., defaultAuthor: string;
+}
+
+export interface ContentType {
   hero: {
     headline: string;
     subheadline: string;
@@ -92,6 +113,7 @@ interface ContentType {
     social: Array<{ platform: string; url: string }>;
     copyright: string;
   };
+  blog: BlogContent;
 }
 
 const CMSPanel = () => {
@@ -209,6 +231,13 @@ const CMSPanel = () => {
           <CMSFooterEditor 
             content={content.footer} 
             updateContent={(newContent: Partial<ContentType['footer']>) => updateSectionContent('footer', newContent)} 
+          />
+        );
+      case 'blog':
+        return (
+          <CMSBlogEditor
+            content={content.blog}
+            updateContent={(newBlogContent: BlogContent) => updateSectionContent('blog', newBlogContent)}
           />
         );
       default:

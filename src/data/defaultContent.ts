@@ -222,5 +222,8 @@ export const defaultContent = {
       { platform: "linkedin", url: "#" }
     ],
     copyright: "© 2025 AI Content Generator. All rights reserved."
+  },
+  blog: {
+    posts: []
   }
 };
