@@ -5,6 +5,7 @@ import './App.css';
 // Layout Components
 const Header = lazy(() => import('./components/layout/Header'));
 const Footer = lazy(() => import('./components/layout/Footer'));
+const BlogPageLayout = lazy(() => import('./components/layout/BlogPageLayout'));
 
 // Section Components
 const HeroSection = lazy(() => import('./components/sections/HeroSection'));
@@ -42,6 +43,7 @@ function App() {
   const [blogPosts, setBlogPosts] = useState<BlogEntry[]>([]);
   const [currentPostSlug, setCurrentPostSlug] = useState<string | null>(null);
   const [selectedPost, setSelectedPost] = useState<BlogEntry | null>(null);
+  const [isBlogPageActive, setIsBlogPageActive] = useState<boolean>(false);
 
   useEffect(() => {
     const savedContentString = localStorage.getItem('cmsContent');
@@ -65,27 +67,33 @@ function App() {
   }, []);
 
   useEffect(() => {
-    const getSlugFromHash = () => window.location.hash.startsWith('#/blog/') ? window.location.hash.substring('#/blog/'.length) : null;
-
+    const getPathFromHash = () => window.location.hash.substring(1); // Remove #
+    
     const handleHashChange = () => {
-      const slug = getSlugFromHash();
-      setCurrentPostSlug(slug);
-      if (slug) {
-        const post = blogPosts.find(p => p.slug === slug && p.status === 'published');
-        setSelectedPost(post || null);
+      const path = getPathFromHash();
+      
+      if (path.startsWith('/blog')) {
+        setIsBlogPageActive(true);
+        const slug = path.startsWith('/blog/') ? path.substring('/blog/'.length) : null;
+        setCurrentPostSlug(slug);
+
+        if (slug) {
+          const post = blogPosts.find(p => p.slug === slug && p.status === 'published');
+          setSelectedPost(post || null);
+        } else {
+          setSelectedPost(null); // No specific post, show list
+        }
       } else {
-        setSelectedPost(null);
+        setIsBlogPageActive(false);
+        setSelectedPost(null); // Not on blog page, so no selected post
+        setCurrentPostSlug(null);
       }
     };
 
-    // Initial check
-    handleHashChange();
-
+    handleHashChange(); // Initial check
     window.addEventListener('hashchange', handleHashChange);
-    return () => {
-      window.removeEventListener('hashchange', handleHashChange);
-    };
-  }, [blogPosts]); // Re-run if blogPosts changes
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, [blogPosts]);
 
   return (
     <>
@@ -131,13 +139,16 @@ function App() {
       <Suspense fallback={<LoadingFallback />}>
         <Header />
         <main>
-          {selectedPost ? (
-            <BlogPostDetailSection post={selectedPost} onClose={() => window.location.hash = ''} />
+          {isBlogPageActive ? (
+            <BlogPageLayout
+              posts={blogPosts}
+              selectedPost={selectedPost}
+              onCloseDetailView={() => window.location.hash = '#/blog'}
+            />
           ) : (
             <>
               <HeroSection />
               <FeatureSection />
-              <BlogListSection posts={blogPosts} />
               <TestimonialSection />
               <PricingSection />
               <LogoSection />
